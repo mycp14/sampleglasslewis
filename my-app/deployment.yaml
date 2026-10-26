@@ -17,10 +17,29 @@ spec:
       containers:
         - name: my-app
           # Built locally and loaded into kind (kind load docker-image).
-          image: my-app:v1
+          image: my-app:v2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
+          env:
+            # Order matters: $(VAR) can only reference variables defined above it.
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DB
+            - name: DATABASE_URL
+              value: postgresql+psycopg://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)
           readinessProbe:
             httpGet:
               path: /health

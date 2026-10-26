@@ -15,3 +15,19 @@ argocd/application.yaml   # tells Argo CD what to watch
 6. Reach the app: `kubectl -n my-app port-forward svc/my-app 8081:80`, then http://localhost:8081
 
 Tear down: `kind delete cluster --name runtime-lab`
+
+## Postgres in the cluster
+`my-app/postgres.yaml` runs Postgres as a StatefulSet. The credentials are NOT in Git; create the
+Secret once, before (or right after) the first sync:
+
+```
+kubectl create namespace my-app   # skip if Argo CD already created it
+kubectl -n my-app create secret generic postgres-credentials \
+  --from-literal=POSTGRES_USER=todo \
+  --from-literal=POSTGRES_PASSWORD="<choose a password>" \
+  --from-literal=POSTGRES_DB=todo
+```
+
+Argo CD ignores the Secret because it isn't in Git, so `prune` won't delete it.
+Image changes: `docker build -t my-app:vN fastapi-app && kind load docker-image my-app:vN --name runtime-lab`,
+then bump the tag in `my-app/deployment.yaml`.
