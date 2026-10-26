@@ -16,18 +16,19 @@ spec:
     spec:
       containers:
         - name: my-app
-          # Placeholder image; swap for your FastAPI image later (step 6).
-          image: nginx:1.27-alpine
+          # Built locally and loaded into kind (kind load docker-image).
+          image: my-app:v1
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 80
+            - containerPort: 8000
           readinessProbe:
             httpGet:
-              path: /
-              port: 80
+              path: /health
+              port: 8000
           livenessProbe:
             httpGet:
-              path: /
-              port: 80
+              path: /health
+              port: 8000
           resources:
             requests:
               cpu: 50m
